@@ -1,7 +1,7 @@
 /**
- * Sample React Native App
- * https://github.com/facebook/react-native
- */
+* Sample React Native App
+* https://github.com/facebook/react-native
+*/
 'use strict';
 
 var React = require('react-native');
@@ -14,24 +14,27 @@ var {
   DeviceEventEmitter,
 } = React;
 var Subscribable = require('Subscribable');
+var NSDModule = NativeModules.NSDModule
 var RNNsd = React.createClass({
   mixins: [Subscribable.Mixin],
 
-  respondToToastEvent: function(e) {
+  respondToEvent: function(e) {
     console.log("Event triggered !!!");
     console.log(e)
   },
 
   componentWillMount: function() {
     this.addListenerOn(DeviceEventEmitter,
-                       'toastDidShow',
-                       this.respondToToastEvent);
+      NSDModule.SERVICE_RESOLVED,
+      this.respondToEvent);
 
+    this.addListenerOn(DeviceEventEmitter,
+      NSDModule.SERVICE_FOUND,
+      this.respondToEvent);
   },
 
   componentDidMount: function() {
-    var MyToastAndroid = NativeModules.MyToastAndroid
-    MyToastAndroid.show('Awesome', MyToastAndroid.LONG, ()=>{}, ()=>{});
+    NSDModule.discover();
   },
 
   render: function() {
