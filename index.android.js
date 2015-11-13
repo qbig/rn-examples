@@ -33,7 +33,7 @@ var RNNsd = React.createClass({
     console.log("Event triggered !!!");
     ToastAndroid.show(e['data'], ToastAndroid.LONG);
     console.log(e)
-  }
+  },
 
   componentWillMount: function() {
     this.addListenerOn(DeviceEventEmitter,

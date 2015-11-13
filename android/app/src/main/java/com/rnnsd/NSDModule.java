@@ -100,7 +100,7 @@ public class NSDModule extends ReactContextBaseJavaModule {
                     NSDModule.this.mServiceFound = service;
                 }
 
-                Toast.makeText(mContext, "service found", Toast.LENGTH_SHORT).show();
+                Toast.makeText(mContext, "service found:" + service.getServiceName(), Toast.LENGTH_SHORT).show();
                 WritableMap params = Arguments.createMap();
                 params.putString("data", service.getServiceName());
                 sendEvent(mContext, SERVICE_FOUND, params);
