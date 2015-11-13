@@ -10,13 +10,31 @@ var {
   StyleSheet,
   Text,
   View,
-  NativeModules
+  NativeModules,
+  DeviceEventEmitter,
 } = React;
-
+var Subscribable = require('Subscribable');
 var RNNsd = React.createClass({
-  render: function() {
+  mixins: [Subscribable.Mixin],
+
+  respondToToastEvent: function(e) {
+    console.log("Event triggered !!!");
+    console.log(e)
+  },
+
+  componentWillMount: function() {
+    this.addListenerOn(DeviceEventEmitter,
+                       'toastDidShow',
+                       this.respondToToastEvent);
+
+  },
+
+  componentDidMount: function() {
     var MyToastAndroid = NativeModules.MyToastAndroid
-    MyToastAndroid.show('Awesome', MyToastAndroid.LONG);
+    MyToastAndroid.show('Awesome', MyToastAndroid.LONG, ()=>{}, ()=>{});
+  },
+
+  render: function() {
     return (
       <View style={styles.container}>
         <Text style={styles.welcome}>

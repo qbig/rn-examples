@@ -14,14 +14,18 @@ import com.facebook.react.modules.core.DeviceEventManagerModule;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ToastModule extends ReactContextBaseJavaModule {
+/**
+ * Created by qiaoliang89 on 13/11/15.
+ */
+
+public class NSDModule extends ReactContextBaseJavaModule {
 
     private static final String DURATION_SHORT_KEY = "SHORT";
     private static final String DURATION_LONG_KEY = "LONG";
 
     @Override
     public String getName() {
-        return "MyToastAndroid";
+        return "NSDModule";
     }
 
     @Override
@@ -51,7 +55,7 @@ public class ToastModule extends ReactContextBaseJavaModule {
                 .emit(eventName, params);
     }
 
-    public ToastModule(ReactApplicationContext reactContext) {
+    public NSDModule(ReactApplicationContext reactContext) {
         super(reactContext);
     }
 }
