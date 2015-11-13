@@ -12,6 +12,7 @@ var {
   View,
   NativeModules,
   DeviceEventEmitter,
+  ToastAndroid
 } = React;
 var Subscribable = require('Subscribable');
 var NSDModule = NativeModules.NSDModule
@@ -20,6 +21,7 @@ var RNNsd = React.createClass({
 
   respondToEvent: function(e) {
     console.log("Event triggered !!!");
+    ToastAndroid.show(e['data'], ToastAndroid.SHORT);
     console.log(e)
   },
 
