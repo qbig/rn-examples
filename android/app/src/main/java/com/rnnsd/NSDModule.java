@@ -32,6 +32,7 @@ public class NSDModule extends ReactContextBaseJavaModule {
     public static final String SERVICE_TYPE = "_http._tcp.";
     public static final String SERVICE_FOUND = "serviceDidFound";
     public static final String SERVICE_RESOLVED = "serviceDidResolved";
+    public static final String SPHERE_SERIVE_NAME = "Sphere POS Store Box";
     public String mServiceName = "";
 
     NsdServiceInfo mService;
@@ -47,6 +48,7 @@ public class NSDModule extends ReactContextBaseJavaModule {
         final Map<String, Object> constants = new HashMap<>();
         constants.put(SERVICE_RESOLVED, SERVICE_RESOLVED);
         constants.put(SERVICE_FOUND, SERVICE_FOUND);
+        constants.put(SPHERE_SERIVE_NAME, SPHERE_SERIVE_NAME);
         return constants;
     }
 
@@ -94,21 +96,23 @@ public class NSDModule extends ReactContextBaseJavaModule {
 
             @Override
             public void onServiceFound(NsdServiceInfo service) {
-                NSDModule.this.mServiceFound = service;
+                if (service.getServiceName().contains(SPHERE_SERIVE_NAME)){
+                    NSDModule.this.mServiceFound = service;
+                }
 
                 Toast.makeText(mContext, "service found", Toast.LENGTH_SHORT).show();
                 WritableMap params = Arguments.createMap();
                 params.putString("data", service.getServiceName());
                 sendEvent(mContext, SERVICE_FOUND, params);
 
-                Log.d(TAG, "Service discovery success" + service);
-                if (!service.getServiceType().equals(SERVICE_TYPE)) {
-                    Log.d(TAG, "Unknown Service Type: " + service.getServiceType());
-                } else if (service.getServiceName().equals(mServiceName)) {
-                    Log.d(TAG, "Same machine: " + mServiceName);
-                } else if (service.getServiceName().contains(mServiceName)){
-                    mNsdManager.resolveService(service, mResolveListener);
-                }
+//                Log.d(TAG, "Service discovery success" + service);
+//                if (!service.getServiceType().equals(SERVICE_TYPE)) {
+//                    Log.d(TAG, "Unknown Service Type: " + service.getServiceType());
+//                } else if (service.getServiceName().equals(mServiceName)) {
+//                    Log.d(TAG, "Same machine: " + mServiceName);
+//                } else if (service.getServiceName().contains(mServiceName)){
+//                    mNsdManager.resolveService(service, mResolveListener);
+//                }
             }
 
             @Override

@@ -19,20 +19,30 @@ var NSDModule = NativeModules.NSDModule
 var RNNsd = React.createClass({
   mixins: [Subscribable.Mixin],
 
-  respondToEvent: function(e) {
+  respondToDiscoveredEvent: function(e) {
     console.log("Event triggered !!!");
     ToastAndroid.show(e['data'], ToastAndroid.SHORT);
     console.log(e)
+    if (e['data'] == NSDModule.SPHERE_SERIVE_NAME) {
+      NSDModule.resolve(NSDModule.SPHERE_SERIVE_NAME);
+      ToastAndroid.show("BOX FOUND !!!! ", ToastAndroid.LONG);
+    }
   },
+
+  respondToResolvedEvent: function(e) {
+    console.log("Event triggered !!!");
+    ToastAndroid.show(e['data'], ToastAndroid.LONG);
+    console.log(e)
+  }
 
   componentWillMount: function() {
     this.addListenerOn(DeviceEventEmitter,
       NSDModule.SERVICE_RESOLVED,
-      this.respondToEvent);
+      this.respondToResolvedEvent);
 
     this.addListenerOn(DeviceEventEmitter,
       NSDModule.SERVICE_FOUND,
-      this.respondToEvent);
+      this.respondToDiscoveredEvent);
   },
 
   componentDidMount: function() {
