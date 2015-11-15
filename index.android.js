@@ -49,6 +49,7 @@ var RNNsd = React.createClass({
 
   componentDidMount: function() {
     console.log("Started !!")
+    console.log(NSDModule.SPHERE_SERIVE_NAME);
     console.log(NSDModule.SERVICE_RESOLVED)
     console.log(NSDModule.SERVICE_FOUND)
     NSDModule.discover();
