@@ -4,7 +4,6 @@ import android.content.Context;
 import android.net.nsd.NsdManager;
 import android.net.nsd.NsdServiceInfo;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.ReactApplicationContext;
@@ -14,7 +13,6 @@ import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
 
-import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -28,14 +26,14 @@ public class NSDModule extends ReactContextBaseJavaModule {
     NsdManager mNsdManager;
     NsdManager.ResolveListener mResolveListener;
     NsdManager.DiscoveryListener mDiscoveryListener;
-    NsdServiceInfo mServiceFound;
+
     public static final String SERVICE_TYPE = "_http._tcp.";
-    public static final String SERVICE_FOUND = "serviceDidFound";
-    public static final String SERVICE_RESOLVED = "serviceDidResolved";
-    public static final String SPHERE_SERIVE_NAME = "Sphere POS Store Box";
+    public static final String SERVICE_FOUND = "SERVICE_FOUND";
+    public static final String SERVICE_RESOLVED = "SERVICE_RESOLVED";
+    public static final String SPHERE_SERIVE_NAME = "SPHERE_SERIVE_NAME";
     public String mServiceName = "";
 
-    NsdServiceInfo mService;
+    HashMap<String, NsdServiceInfo> mServicesFound;
     public static final String TAG = "BigSpoon eMenu";
 
     @Override
@@ -46,16 +44,14 @@ public class NSDModule extends ReactContextBaseJavaModule {
     @Override
     public Map<String, Object> getConstants() {
         final Map<String, Object> constants = new HashMap<>();
-        constants.put(SERVICE_RESOLVED, SERVICE_RESOLVED);
-        constants.put(SERVICE_FOUND, SERVICE_FOUND);
-        constants.put(SPHERE_SERIVE_NAME, SPHERE_SERIVE_NAME);
+        constants.put(SERVICE_FOUND, "SERVICE_FOUND");
+        constants.put(SERVICE_RESOLVED, "SERVICE_RESOLVED");
+        constants.put(SPHERE_SERIVE_NAME, "Sphere POS Store Box");
         return constants;
     }
 
     @ReactMethod
-    public void discover() {
-        discoverServices();
-    }
+    public void discover() { discoverServices(); }
 
     @ReactMethod
     public void stop() {
@@ -65,7 +61,9 @@ public class NSDModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void resolve(String serviceName) {
         this.mServiceName = serviceName;
-        mNsdManager.resolveService(mServiceFound, mResolveListener);
+        Log.d(TAG, "resolving: " + serviceName );
+        Log.d(TAG, mServicesFound.get(serviceName).getServiceName());
+        mNsdManager.resolveService(mServicesFound.get(serviceName), mResolveListener);
     }
 
     private void sendEvent(ReactContext reactContext,
@@ -80,6 +78,7 @@ public class NSDModule extends ReactContextBaseJavaModule {
         super(reactContext);
         mContext = reactContext;
         mNsdManager = (NsdManager) reactContext.getSystemService(Context.NSD_SERVICE);
+        mServicesFound = new HashMap<String, NsdServiceInfo>();
         initializeResolveListener();
         initializeDiscoveryListener();
     }
@@ -90,56 +89,38 @@ public class NSDModule extends ReactContextBaseJavaModule {
 
             @Override
             public void onDiscoveryStarted(String regType) {
-                Toast.makeText(mContext, "discover started", Toast.LENGTH_SHORT).show();
                 Log.d(TAG, "Service discovery started");
             }
 
             @Override
             public void onServiceFound(NsdServiceInfo service) {
-                if (service.getServiceName().contains(SPHERE_SERIVE_NAME)){
-                    NSDModule.this.mServiceFound = service;
-                }
-
-                Toast.makeText(mContext, "service found:" + service.getServiceName(), Toast.LENGTH_SHORT).show();
+                mServicesFound.put(service.getServiceName(), service);
                 WritableMap params = Arguments.createMap();
                 params.putString("data", service.getServiceName());
                 sendEvent(mContext, SERVICE_FOUND, params);
-
-//                Log.d(TAG, "Service discovery success" + service);
-//                if (!service.getServiceType().equals(SERVICE_TYPE)) {
-//                    Log.d(TAG, "Unknown Service Type: " + service.getServiceType());
-//                } else if (service.getServiceName().equals(mServiceName)) {
-//                    Log.d(TAG, "Same machine: " + mServiceName);
-//                } else if (service.getServiceName().contains(mServiceName)){
-//                    mNsdManager.resolveService(service, mResolveListener);
-//                }
+                Log.d(TAG, "Service discovery success, name :" + service.getServiceName());
+                Log.d(TAG, "Service type" + service.getServiceType());
             }
 
             @Override
             public void onServiceLost(NsdServiceInfo service) {
-                Toast.makeText(mContext, "service lost" + service, Toast.LENGTH_SHORT).show();
                 Log.e(TAG, "service lost" + service);
-                if (mService == service) {
-                    mService = null;
-                }
+                mServicesFound.remove(service.getServiceName());
             }
 
             @Override
             public void onDiscoveryStopped(String serviceType) {
-                Toast.makeText(mContext, "Discovery stopped: " + serviceType, Toast.LENGTH_SHORT).show();
                 Log.i(TAG, "Discovery stopped: " + serviceType);
             }
 
             @Override
             public void onStartDiscoveryFailed(String serviceType, int errorCode) {
-                Toast.makeText(mContext, "Discovery failed: Error code:" + errorCode, Toast.LENGTH_SHORT).show();
                 Log.e(TAG, "Discovery failed: Error code:" + errorCode);
                 mNsdManager.stopServiceDiscovery(this);
             }
 
             @Override
             public void onStopDiscoveryFailed(String serviceType, int errorCode) {
-                Toast.makeText(mContext, "Discovery failed: Error code:" + errorCode, Toast.LENGTH_SHORT).show();
                 Log.e(TAG, "Discovery failed: Error code:" + errorCode);
                 mNsdManager.stopServiceDiscovery(this);
             }
@@ -151,30 +132,18 @@ public class NSDModule extends ReactContextBaseJavaModule {
 
             @Override
             public void onResolveFailed(NsdServiceInfo serviceInfo, int errorCode) {
-                Toast.makeText(mContext, "Resolve failed" + errorCode, Toast.LENGTH_SHORT).show();
                 Log.e(TAG, "Resolve failed" + errorCode);
             }
 
             @Override
             public void onServiceResolved(NsdServiceInfo serviceInfo) {
-                try {
-                    WritableMap params = Arguments.createMap();
-                    params.putString("data", serviceInfo.getHost().getLocalHost().getHostAddress());
-                    sendEvent(mContext, SERVICE_RESOLVED, params);
-                } catch (UnknownHostException e) {
-                    WritableMap params = Arguments.createMap();
-                    params.putString("data", e.getMessage());
-                    sendEvent(mContext, SERVICE_RESOLVED, params);
-                }
-
-                Toast.makeText(mContext, "Resolve Succeeded. " + serviceInfo, Toast.LENGTH_SHORT).show();
                 Log.e(TAG, "Resolve Succeeded. " + serviceInfo);
 
-                if (serviceInfo.getServiceName().equals(mServiceName)) {
-                    Log.d(TAG, "Same IP.");
-                    return;
-                }
-                mService = serviceInfo;
+                WritableMap params = Arguments.createMap();
+                params.putString("data", serviceInfo.getHost().getHostAddress());
+                Log.e(TAG, "Resolved IP:" + serviceInfo.getHost().getHostAddress());
+                sendEvent(mContext, SERVICE_RESOLVED, params);
+
             }
         };
     }
@@ -186,9 +155,5 @@ public class NSDModule extends ReactContextBaseJavaModule {
 
     public void stopDiscovery() {
         mNsdManager.stopServiceDiscovery(mDiscoveryListener);
-    }
-
-    public NsdServiceInfo getChosenServiceInfo() {
-        return mService;
     }
 }

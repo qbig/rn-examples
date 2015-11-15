@@ -20,19 +20,21 @@ var RNNsd = React.createClass({
   mixins: [Subscribable.Mixin],
 
   respondToDiscoveredEvent: function(e) {
-    console.log("Event triggered !!!");
-    ToastAndroid.show(e['data'], ToastAndroid.SHORT);
-    console.log(e)
-    if (e['data'] == NSDModule.SPHERE_SERIVE_NAME) {
-      NSDModule.resolve(NSDModule.SPHERE_SERIVE_NAME);
-      ToastAndroid.show("BOX FOUND !!!! ", ToastAndroid.LONG);
+    //'D-Link DIR-868L Configuration Utility'
+    //'D-Link SharePort Web Access'
+    ToastAndroid.show("found: " + e['data'], ToastAndroid.SHORT);
+    if (e['data'] === 'D-Link DIR-868L Configuration Utility') {
+        NSDModule.resolve(e['data']);
     }
+    // if (e['data'] == NSDModule.SPHERE_SERIVE_NAME) {
+    //   NSDModule.resolve(NSDModule.SPHERE_SERIVE_NAME);
+    //   ToastAndroid.show("BOX FOUND !!!! ", ToastAndroid.LONG);
+    // }
   },
 
   respondToResolvedEvent: function(e) {
-    console.log("Event triggered !!!");
-    ToastAndroid.show(e['data'], ToastAndroid.LONG);
-    console.log(e)
+    console.log("resolved:" + e['data']);
+    ToastAndroid.show("resolved:" + e['data'], ToastAndroid.SHORT)
   },
 
   componentWillMount: function() {
@@ -46,6 +48,9 @@ var RNNsd = React.createClass({
   },
 
   componentDidMount: function() {
+    console.log("Started !!")
+    console.log(NSDModule.SERVICE_RESOLVED)
+    console.log(NSDModule.SERVICE_FOUND)
     NSDModule.discover();
   },
 
